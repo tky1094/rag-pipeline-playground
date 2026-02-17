@@ -4,7 +4,7 @@ import hashlib
 
 from src.config import PipelineConfig
 from src.embedder import get_embeddings
-from src.generator import generate, generate_stream
+from src.generator import TokenUsage, generate, generate_stream
 from src.loader import load_markdown_files, split_by_headers, split_chunks
 from src.retriever import retrieve
 from src.store import get_collection, upsert_chunks
@@ -51,15 +51,18 @@ def ask(query: str, config: PipelineConfig, *, stream: bool = False) -> dict:
     contexts = [chunk["text"] for chunk in chunks]
 
     if stream:
+        usage = TokenUsage()
         return {
             "query": query,
-            "stream": generate_stream(query, contexts, config.generator),
+            "stream": generate_stream(query, contexts, config.generator, usage),
+            "usage": usage,
             "contexts": chunks,
         }
 
-    answer = generate(query, contexts, config.generator)
+    result = generate(query, contexts, config.generator)
     return {
         "query": query,
-        "answer": answer,
+        "answer": result.text,
+        "usage": result.usage,
         "contexts": chunks,
     }
