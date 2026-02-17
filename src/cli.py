@@ -39,10 +39,14 @@ def query(
         for chunk in result["stream"]:
             print(chunk, end="", flush=True)
         print()
+
     sources = dict.fromkeys(c["metadata"].get("source", "不明") for c in result["contexts"])
     typer.echo(f"\n参照ドキュメント ({len(result['contexts'])}チャンク):")
     for source in sources:
         typer.echo(f"  - {source}")
+
+    usage = result["usage"]
+    typer.echo(f"\nトークン使用量: input={usage.input_tokens}, output={usage.output_tokens}")
 
 
 def main() -> None:
